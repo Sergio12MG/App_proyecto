@@ -45,7 +45,10 @@ export default function CrearDispositivo({ navigation, onAgregar }) {
                 placeholder="Ej. Llave Inteligente"
             ></TextInput>
 
-
+            <Button title="Seleccionar Imagen" onPress={handlePickImage} />
+            {imagenUri && <Image source={{ uri: imagenUri }} style={styles.imagenPreview} />}
+            
+            <Button title="Guardar Dispositivo" onPress={handleGuardar} />
         </View>
     );
 }
