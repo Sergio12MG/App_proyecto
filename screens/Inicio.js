@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, FlatList, Pressable } from 'react-native';
 import DispositivoItem from '../components/DispositivoItem';
 
+// Recibe como props la navegación y el array de dispositivos (desde App.js)
 export default function Inicio({ navigation, dispositivos }) {
   return (
     <View style={styles.container}>
@@ -20,9 +21,10 @@ export default function Inicio({ navigation, dispositivos }) {
         <Text>Aún no tienes dispositivos añadidos.</Text>
       )}
       
+      {/* Botón para navegar al formulario */}
       <Pressable
         style={styles.boton}
-        onPress={() => navigation.navigate('Crear Dispositivo')}
+        onPress={() => navigation.navigate('CrearDispositivo')}
       >
         <Text style={styles.textoBoton}>+</Text>
       </Pressable>
