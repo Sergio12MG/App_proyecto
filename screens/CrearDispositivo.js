@@ -7,18 +7,15 @@ export default function CrearDispositivo({ navigation, onAgregar }) {
     const [imagenUri, setImagenUri] = useState(null);
 
     const handlePickImage = async () => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-        if (status !== 'granted') {
-            alert('Se necesita permiso para acceder a la galería.');
-            return;
-        }
-
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.mediaTypes.Image,
+        
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images', 'videos'],
             allowsEditing: true,
+            aspect: [1,1],
             quality: 1,
         });
+
+        console.log(result);
 
         if (!result.canceled) {
             setImagenUri(result.assets[0].uri);
