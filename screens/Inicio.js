@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList, Pressable } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Pressable, ScrollView } from 'react-native';
 import DispositivoItem from '../components/DispositivoItem';
 
 // Recibe como props la navegación y el array de dispositivos (desde App.js)
@@ -6,28 +6,28 @@ export default function Inicio({ navigation, dispositivos }) {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Mis dispositivos</Text>
+        {/* Muestra la lista de dispositivos si existen */}
+        {dispositivos.length > 0 ? (
+          <FlatList
+            data={dispositivos} // El array declarado en App.js
+            keyExtractor={(item) => item.id} // Obtener los dispositivos por su id
+            renderItem={({ item }) => (
+              <DispositivoItem nombre={item.nombre} imagen={item.imagen}></DispositivoItem>
+            )}
+          >
+          </FlatList>
+        ) : (
+          <Text>Aún no tienes dispositivos añadidos.</Text>
+        )}
 
-      {/* Muestra la lista de dispositivos si existen */}
-      {dispositivos.length > 0 ? (
-        <FlatList
-          data={dispositivos}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <DispositivoItem nombre={item.nombre} imagen={item.imagen}></DispositivoItem>
-          )}
+
+        {/* Botón para navegar al formulario */}
+        <Pressable
+          style={styles.boton}
+          onPress={() => navigation.navigate('CrearDispositivo')}
         >
-        </FlatList>
-      ) : (
-        <Text>Aún no tienes dispositivos añadidos.</Text>
-      )}
-      
-      {/* Botón para navegar al formulario */}
-      <Pressable
-        style={styles.boton}
-        onPress={() => navigation.navigate('CrearDispositivo')}
-      >
-        <Text style={styles.textoBoton}>+</Text>
-      </Pressable>
+          <Text style={styles.textoBoton}>+</Text>
+        </Pressable>
     </View>
   );
 }

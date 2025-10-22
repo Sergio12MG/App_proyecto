@@ -4,10 +4,10 @@ import * as ImagePicker from 'expo-image-picker';
 
 export default function CrearDispositivo({ navigation, onAgregar }) {
     const [nombre, setNombre] = useState('');
-    const [imagenUri, setImagenUri] = useState(null);
+    const [imagen, setImagen] = useState(null);
 
+    // Para seleccionar una imagen desde la galería
     const handlePickImage = async () => {
-        
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images', 'videos'],
             allowsEditing: true,
@@ -18,14 +18,16 @@ export default function CrearDispositivo({ navigation, onAgregar }) {
         console.log(result);
 
         if (!result.canceled) {
-            setImagenUri(result.assets[0].uri);
+            setImagen(result.assets[0].uri);
         }
     };
 
+    // Para crear un nuevo elemento del componente DispositivoItem
     const handleGuardar = () => {
-        if (nombre.trim().length > 0 && imagenUri) {
-            onAgregar(nombre, imagenUri);
-            navigation.goBack(); // Volver a la pantalla de inicio
+        // Se confirma que sí se haya ingresado un nombre y seleccionado una imagen
+        if (nombre.trim().length > 0 && imagen) {
+            onAgregar(nombre, imagen); // Se guarda
+            navigation.goBack(); // Vuelve a la pantalla de inicio
         } else {
             alert('Por favor, ingresa un nombre y selecciona una imagen.');
         }
@@ -43,7 +45,7 @@ export default function CrearDispositivo({ navigation, onAgregar }) {
             ></TextInput>
 
             <Button title="Seleccionar Imagen" onPress={handlePickImage} />
-            {imagenUri && <Image source={{ uri: imagenUri }} style={styles.imagenPreview} />}
+            {imagen && <Image source={{ uri: imagen }} style={styles.imagenPreview} />}
             
             <Button title="Guardar Dispositivo" onPress={handleGuardar} />
         </View>
