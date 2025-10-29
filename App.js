@@ -11,13 +11,16 @@ import Controlador from './screens/Controlador';
 import CrearDispositivo from './screens/CrearDispositivo';
 import Configuracion from './screens/Configuracion';
 import LoginScreen from './screens/Login';
+import RegistrationScreen from './screens/Registration';
+import StartScreen from './screens/StartScreen';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { registrarDispositivo, obtenerDispositivos } from './utils/dispositivos';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-// Navegación para el formulario de registro de un dispositivo
+// Navegación entre:
+// Pantalla de inicio <===> Pantalla con formulario de registro de un dispositivo
 function InicioStackScreen({ agregarDispositivo, dispositivos }) {
   return (
     <Stack.Navigator>
@@ -26,6 +29,24 @@ function InicioStackScreen({ agregarDispositivo, dispositivos }) {
       </Stack.Screen>
       <Stack.Screen name="CrearDispositivo" options={{ title: 'Agregar Dispositivo' }}>
         {(props) => <CrearDispositivo {...props} onAgregar={agregarDispositivo} />}
+      </Stack.Screen>
+    </Stack.Navigator>
+  );
+}
+
+// Navegación desde la pantalla de presentación entre:
+// Pantalla de login <===> Pantalla de registro de usuario
+function StartStackScreen() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Start" options={{ headerShown: false }}>
+        {(props) => <StartScreen {...props} />}
+      </Stack.Screen>
+      <Stack.Screen name="LoginView" options={{ headerShown: false }}>
+        {(props) => <LoginScreen {...props} />}
+      </Stack.Screen>
+      <Stack.Screen name="RegistrationUserView" options={{ headerShown: false }}>
+        {(props) => <RegistrationScreen {...props} />}
       </Stack.Screen>
     </Stack.Navigator>
   );
@@ -83,7 +104,11 @@ function AppContent() {
   // ============================================================================
   // Si el usuario no está autenticado, muestra la pantalla de Login
   if (!isAuthenticated) {
-    return <LoginScreen />;
+    return (
+      <NavigationContainer>
+        <StartStackScreen />
+      </NavigationContainer>
+    );
   }
 
   // Si el usuario está autenticado, muestra la navegación principal
