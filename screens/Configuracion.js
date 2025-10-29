@@ -1,9 +1,26 @@
 import { StyleSheet, Text, View, Button } from 'react-native';
 
+import { AuthProvider, useAuth } from '../context/AuthContext';
+
 export default function Configuracion({ navigation }) {
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      Alert.alert("Error al intentar cerrar sesión");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.texto}>Cooming soon :v</Text>
+
+      <Button
+        title="Cerrar sesión"
+        onPress={handleLogout}
+      />
     </View>
   );
 }
