@@ -1,19 +1,18 @@
-import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import * as SecureStore from 'expo-secure-store';
-import React, {useState} from 'react';
+import React, { useState, useEffect } from 'react';
 
-import { StyleSheet, View, Text, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, ActivityIndicator, Alert } from 'react-native';
 
 import Inicio from './screens/Inicio';
 import Controlador from './screens/Controlador';
 import CrearDispositivo from './screens/CrearDispositivo';
 import Configuracion from './screens/Configuracion';
 import LoginScreen from './screens/Login';
-import { logout } from './utils/auth';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { registrarDispositivo, obtenerDispositivos } from './utils/dispositivos';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -32,49 +31,45 @@ function InicioStackScreen({ agregarDispositivo, dispositivos }) {
   );
 }
 
-export default function App() {
-  // Estados para manejar el flujo de autenticación
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+function AppContent() {
+  const { isLoading, isAuthenticated, logout } = useAuth(); // Valores del contexto de autenticación
+  const [dispositivos, setDispositivos] = useState([]); // Array para dispositivos
 
-  // Array para almacenar dispositivos (estado compartido entre los componentes Inicio.js y CrearDispositivo.js)
-  const [dispositivos, setDispositivos] = useState([]);
+  // Cargar los dispositivos cuando el usuario está autenticado
+  useEffect(() => {
+    if (isAuthenticated) {
+      obtenerDispositivos()
+        .then(response => {
+          // La API devuelve un objeto con un campo 'datos' que es la lista
+          setDispositivos(response.data.datos || []);
+        })
+        .catch(error => {
+          console.error('Error al obtener los dispositivos:', error);
+          // Si el error es 404 (no hay dispositivos) o es 401 (el token ya no es válido/expiró), simplemente se deja la lista vacía.
+          if (error.response && error.response.status === 404 || error.response && error.response.status === 401) {
+            setDispositivos([]);
+          } else {
+            Alert.alert('Error', 'No se pudieron cargar los dispositivos.');
+          }
+        });
+    }
+  }, [isAuthenticated]); // Se ejecuta cada vez que 'isAuthenticated' cambia
 
   // Agregar un dispositivo con nombre e imagen
   function agregarDispositivo(nombre, imagen) {
-    const nuevoDispositivo = {
-      id: Math.random().toString(),
-      nombre: nombre,
-      imagen: imagen,
-    };
-    setDispositivos((currentDispositivos) => [...currentDispositivos, nuevoDispositivo]);
+    // La lógica para crear el FormData está en `registrarDispositivo`.
+    registrarDispositivo({ nombre, imagen })
+      .then(response => {
+        // Se añade el nuevo dispositivo (que viene en response.data.datos) a la lista existente
+        setDispositivos(prevDispositivos => [...prevDispositivos, response.data.datos]);
+      })
+      .catch(error => {
+        console.error('Error al registrar el dispositivo:', error);
+        Alert.alert('Error al registrar el dispositivo');
+      });
   }
 
-  // Al cargar la app, verificar si existe un token
-  React.useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const token = await SecureStore.getItemAsync('userToken');
-        if (token) {
-          setIsAuthenticated(true); // Si hay token, el usuario está autenticado
-        }
-      } catch (e) {
-        console.error("Error al leer el token", e);
-      } finally {
-        setIsLoading(false); // Termina la carga
-      }
-    };
-
-    checkAuthStatus();
-  }, []);
-
-  // Función para manejar el cierre de sesión
-  const handleLogout = async () => {
-    await logout();
-    setIsAuthenticated(false);
-  };
-
-  // Muestra un indicador de carga mientras se verifica el token
+  // Muestra el indicador de carga mientras se verifica el token
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -83,9 +78,12 @@ export default function App() {
     );
   }
 
+  // ============================================================================
+  // ============================ CARGA DE PANTALLAS ============================
+  // ============================================================================
   // Si el usuario no está autenticado, muestra la pantalla de Login
   if (!isAuthenticated) {
-    return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
+    return <LoginScreen />;
   }
 
   // Si el usuario está autenticado, muestra la navegación principal
@@ -111,10 +109,18 @@ export default function App() {
         </Tab.Screen>
         <Tab.Screen name="Controlador" component={Controlador} />
         <Tab.Screen name="Configuracion">
-          {(props) => <Configuracion {...props} onLogout={handleLogout} />}
+          {(props) => <Configuracion {...props} onLogout={logout} />}
         </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
